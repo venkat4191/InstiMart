@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Orders</h2>
+    
+    <!-- Order Status Tabs -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link active" href="#pending" data-bs-toggle="tab">Pending</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#processing" data-bs-toggle="tab">Processing</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#completed" data-bs-toggle="tab">Completed</a>
+        </li>
+    </ul>
+
+    <!-- Orders Table -->
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="pending">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            {% if order.status == 'pending' %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') if order.created_at else 'N/A' }}</td>
+                                <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                                <td>
+                                    <span class="badge bg-warning">{{ order.status }}</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#orderModal{{ order.id }}">View Details</button>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="processing">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            {% if order.status == 'processing' %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') if order.created_at else 'N/A' }}</td>
+                                <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ order.status }}</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#orderModal{{ order.id }}">View Details</button>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="completed">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            {% if order.status == 'completed' %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') if order.created_at else 'N/A' }}</td>
+                                <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                                <td>
+                                    <span class="badge bg-success">{{ order.status }}</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#orderModal{{ order.id }}">View Details</button>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Details Modals -->
+{% for order in orders %}
+<div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1" aria-labelledby="orderModalLabel{{ order.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderModalLabel{{ order.id }}">Order #{{ order.id }} Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Order Information</h6>
+                        <p><strong>Date:</strong> {{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') if order.created_at else 'N/A' }}</p>
+                        <p><strong>Status:</strong> {{ order.status }}</p>
+                        <p><strong>Total Amount:</strong> ${{ "%.2f"|format(order.total_amount) }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Shipping Information</h6>
+                        <p><strong>Address:</strong> {{ order.shipping_address }}</p>
+                        <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+                    </div>
+                </div>
+                <h6>Order Items</h6>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.order_items %}
+                        <tr>
+                            <td>{{ item.product_name }}</td>
+                            <td>${{ "%.2f"|format(item.price) }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>${{ "%.2f"|format(item.price * item.quantity) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %} 

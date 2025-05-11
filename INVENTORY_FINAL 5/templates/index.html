@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Welcome to Inventory Management System</h1>
+    
+    {% if user %}
+        <div class="alert alert-info">
+            Welcome back, {{ user.username }}! (Role: {{ user.role }})
+        </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-3">Featured Products</h2>
+            <div class="row">
+                {% for product in featured_products %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text">
+                                <strong>Price:</strong> ${{ "%.2f"|format(product.price) }}
+                                {% if product.discount > 0 %}
+                                    <span class="badge bg-success">-{{ product.discount }}%</span>
+                                {% endif %}
+                            </p>
+                            <p class="card-text">
+                                <strong>Category:</strong> {{ product.category }}
+                                {% if product.subcategory %}
+                                    <br><strong>Subcategory:</strong> {{ product.subcategory }}
+                                {% endif %}
+                            </p>
+                            <p class="card-text">
+                                <strong>Stock:</strong> {{ product.quantity }}
+                            </p>
+                            {% if user and user.role == 'customer' %}
+                                <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="btn btn-primary">Add to Cart</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h2 class="mb-3">Categories</h2>
+            <div class="row">
+                {% for category in categories %}
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ category }}</h5>
+                            <a href="{{ url_for('category_products', category=category) }}" class="btn btn-outline-primary">View Products</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

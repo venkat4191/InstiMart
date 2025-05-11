@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Account Details</h2>
+    
+    {% if user %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Personal Information</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Username:</strong> {{ user.username }}</p>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <p><strong>Role:</strong> {{ user.role }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Member Since:</strong> {{ user.created_at.strftime('%B %d, %Y') }}</p>
+                        <p><strong>Last Login:</strong> {{ user.last_login.strftime('%B %d, %Y %H:%M:%S') if user.last_login else 'Never' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Order History</h5>
+                <p>Total Orders: {{ user.orders|length }}</p>
+                <a href="{{ url_for('my_orders') }}" class="btn btn-primary">View Orders</a>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Account Actions</h5>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('customer_dashboard') }}" class="btn btn-outline-primary">Back to Dashboard</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">Logout</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            Unable to load account details. Please try again later.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

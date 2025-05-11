@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'customer_dashboard' %}active{% endif %}" href="{{ url_for('customer_dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'view_cart' %}active{% endif %}" href="{{ url_for('view_cart') }}">
+                            <i class="fas fa-shopping-cart"></i> Cart
+                            {% if cart is defined and cart.items is defined and cart.items is iterable %}
+                                {% set items_count = cart.items|length %}
+                                {% if items_count > 0 %}
+                                    <span class="badge bg-primary rounded-pill">{{ items_count }}</span>
+                                {% endif %}
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'my_orders' %}active{% endif %}" href="{{ url_for('my_orders') }}">
+                            <i class="fas fa-clipboard-list"></i> My Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'account_details' %}active{% endif %}" href="{{ url_for('account_details') }}">
+                            <i class="fas fa-user"></i> Account Details
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Customer Dashboard</h1>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form action="{{ url_for('customer_dashboard') }}" method="get" class="row g-3">
+                                <div class="col-md-4">
+                                    <input type="text" name="q" class="form-control" placeholder="Search products by name or description..." value="{{ query }}">
+                                </div>
+                                <div class="col-md-2">
+                                    <select name="category" class="form-select">
+                                        <option value="">All Categories</option>
+                                        {% for category in categories %}
+                                        <option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>
+                                            {{ category }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" name="min_price" class="form-control" placeholder="Min Price" value="{{ min_price if min_price is not none }}">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" name="max_price" class="form-control" placeholder="Max Price" value="{{ max_price if max_price is not none }}">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Welcome message -->
+            <div class="alert alert-info">
+                Welcome, {{ user.username }}! Here's your dashboard overview.
+            </div>
+
+            <!-- Quick stats -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Recent Orders</h5>
+                            <p class="card-text">{{ orders|length }} orders in total</p>
+                            <a href="{{ url_for('my_orders') }}" class="btn btn-primary">View Orders</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Cart Items</h5>
+                            <p class="card-text">
+                                {% if cart is defined and cart.items is defined and cart.items is iterable %}
+                                    {{ cart.items|length }}
+                                {% else %}
+                                    0
+                                {% endif %} items in cart
+                            </p>
+                            <a href="{{ url_for('view_cart') }}" class="btn btn-primary">View Cart</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Account Status</h5>
+                            <p class="card-text">Member since {{ user.created_at.strftime('%B %Y') }}</p>
+                            <a href="{{ url_for('account_details') }}" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Products -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h3>Featured Products</h3>
+                    <div class="row">
+                        {% for product in featured_products %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ product.name }}</h5>
+                                    <p class="card-text">{{ product.description }}</p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Category: {{ product.category }}<br>
+                                            Subcategory: {{ product.subcategory }}
+                                        </small>
+                                    </p>
+                                    <p class="card-text">
+                                        <strong>Price: ${{ "%.2f"|format(product.price) }}</strong>
+                                    </p>
+                                    <p class="card-text">
+                                        <span class="badge bg-{{ 'success' if product.quantity > 0 else 'danger' }}">
+                                            {{ 'In Stock' if product.quantity > 0 else 'Out of Stock' }}
+                                        </span>
+                                    </p>
+                                    {% if product.quantity > 0 %}
+                                    <form method="POST" action="{{ url_for('add_to_cart', product_id=product.id) }}">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-cart-plus"></i> Add to Cart
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h3>Categories</h3>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for category in categories %}
+                        <a href="{{ url_for('category_products', category=category) }}" class="btn btn-outline-primary">
+                            {{ category|replace('"', '') }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %} 

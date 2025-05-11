@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Order Details</h2>
+    
+    <!-- Order Information -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Order #{{ order.id }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Date:</strong> {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge {% if order.status == 'completed' %}bg-success{% elif order.status == 'processing' %}bg-info{% else %}bg-warning{% endif %}">
+                            {{ order.status }}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Shipping Address:</strong> {{ order.shipping_address }}</p>
+                    <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Items -->
+    <div class="card">
+        <div class="card-header">
+            <h4>Items</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order_items %}
+                        <tr>
+                            <td>{{ item.product_name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>${{ "%.2f"|format(item.price) }}</td>
+                            <td>${{ "%.2f"|format(item.price * item.quantity) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4">
+        {% if order.status == 'pending' %}
+        <form action="{{ url_for('process_order', order_id=order.id) }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-primary">Process Order</button>
+        </form>
+        {% elif order.status == 'processing' %}
+        <form action="{{ url_for('update_order_status', order_id=order.id) }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-success">Mark as Completed</button>
+        </form>
+        {% endif %}
+        <a href="{{ url_for('vendor_orders') }}" class="btn btn-secondary">Back to Orders</a>
+    </div>
+</div>
+{% endblock %} 
